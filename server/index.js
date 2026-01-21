@@ -33,6 +33,8 @@ if (!admin.apps.length && serviceAccount) {
 }
 
 // --- 2. NODEMAILER SETUP ---
+console.log("Email Config Loaded User:", process.env.EMAIL_USER);
+
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
