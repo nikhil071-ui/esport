@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const admin = require("firebase-admin");
 const cron = require('node-cron');
 const templates = require('./emailTemplates');
@@ -11,6 +11,9 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Initialize Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // --- 1. FIREBASE ADMIN SETUP ---
 let serviceAccount;
@@ -32,30 +35,23 @@ if (!admin.apps.length && serviceAccount) {
     });
 }
 
-// --- 2. NODEMAILER SETUP ---
-console.log("Email Config Loaded User:", process.env.EMAIL_USER ? "Yes" : "No");
+// --- 2. EMAIL SETUP (Using Resend instead of Gmail SMTP) ---
+console.log("Resend API Key Loaded:", process.env.RESEND_API_KEY ? "Yes" : "No");
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail', // Back to simplified Service for best Gmail compatibility
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
-
-// Helper Function for HTML Emails
+// Helper Function for HTML Emails using Resend
 const sendHtmlEmail = async (to, subject, htmlContent) => {
-    const mailOptions = {
-        from: `Nexus Esports <${process.env.EMAIL_USER}>`,
-        to,
-        subject,
-        html: htmlContent
-    };
     try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`Email Sent to ${to}:`, info.response);
+        const data = await resend.emails.send({
+            from: "Nexus Esports <onboarding@resend.dev>",
+            to: to,
+            subject: subject,
+            html: htmlContent,
+        });
+        console.log(`Email Sent to ${to}:`, data);
+        return data;
     } catch (error) {
         console.error(`Failed to send email to ${to}:`, error);
+        throw error;
     }
 };
 
