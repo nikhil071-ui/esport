@@ -37,8 +37,8 @@ console.log("Email Config Loaded User:", process.env.EMAIL_USER ? "Yes" : "No");
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
+    port: 587, // STARTTLS
+    secure: false, // true for 465, false for other ports
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
@@ -46,18 +46,30 @@ const transporter = nodemailer.createTransport({
 });
 
 // Helper Function for HTML Emails
-const sendHtmlEmail = (to, subject, htmlContent) => {
+const sendHtmlEmail = async (to, subject, htmlContent) => {
     const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: `Nexus Esports <${process.env.EMAIL_USER}>`,
         to,
         subject,
         html: htmlContent
     };
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) console.log("Email Error:", error);
-        else console.log("Email Sent:", info.response);
-    });
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`Email Sent to ${to}:`, info.response);
+    } catch (error) {
+        console.error(`Failed to send email to ${to}:`, error);
+    }
 };
+
+// --- API: TEST EMAIL (DEBUGGING) ---
+app.get('/api/test-email', async (req, res) => {
+    try {
+        await sendHtmlEmail(process.env.EMAIL_USER, "Test Email", "<h1>If you see this, email is working!</h1>");
+        res.json({ message: "Test email sent! Check server logs for details." });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
 // --- CRON JOB: TOURNAMENT REMINDER (Every Minute) ---
 // Checks for tournaments starting in 30 minutes
