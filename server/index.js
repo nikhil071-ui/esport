@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const nodemailer = require('nodemailer');
+const axios = require('axios');
 const admin = require("firebase-admin");
 const cron = require('node-cron');
 const templates = require('./emailTemplates');
@@ -32,33 +32,35 @@ if (!admin.apps.length && serviceAccount) {
     });
 }
 
-// --- 2. EMAIL SETUP (Using Brevo SMTP - Reliable on Render) ---
-console.log("Brevo SMTP Configured:", process.env.BREVO_SMTP_USER ? "Yes" : "No");
+// --- 2. EMAIL SETUP (Using Brevo HTTP API - Works on Render!) ---
+console.log("Brevo API Key Loaded:", process.env.BREVO_API_KEY ? "Yes" : "No");
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp-relay.brevo.com',
-    port: 587,
-    secure: false,
-    auth: {
-        user: process.env.BREVO_SMTP_USER,
-        pass: process.env.BREVO_SMTP_PASS
-    }
-});
-
-// Helper Function for HTML Emails using Brevo
+// Helper Function for HTML Emails using Brevo HTTP API
 const sendHtmlEmail = async (to, subject, htmlContent) => {
-    const mailOptions = {
-        from: `Nexus Esports <${process.env.BREVO_SENDER_EMAIL}>`,
-        to: to,
-        subject: subject,
-        html: htmlContent
-    };
     try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`Email Sent to ${to}:`, info.messageId);
-        return info;
+        const response = await axios.post(
+            'https://api.brevo.com/v3/smtp/email',
+            {
+                sender: {
+                    name: 'Nexus Esports',
+                    email: process.env.BREVO_SENDER_EMAIL
+                },
+                to: [{ email: to }],
+                subject: subject,
+                htmlContent: htmlContent
+            },
+            {
+                headers: {
+                    'accept': 'application/json',
+                    'api-key': process.env.BREVO_API_KEY,
+                    'content-type': 'application/json'
+                }
+            }
+        );
+        console.log(`Email Sent to ${to}:`, response.data.messageId);
+        return response.data;
     } catch (error) {
-        console.error(`Failed to send email to ${to}:`, error);
+        console.error(`Failed to send email to ${to}:`, error.response?.data || error.message);
         throw error;
     }
 };
