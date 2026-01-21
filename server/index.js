@@ -68,11 +68,21 @@ const sendHtmlEmail = async (to, subject, htmlContent) => {
 // --- API: TEST EMAIL (DEBUGGING) ---
 app.get('/api/test-email', async (req, res) => {
     try {
-        await sendHtmlEmail(process.env.EMAIL_USER, "Test Email", "<h1>If you see this, email is working!</h1>");
+        await sendHtmlEmail(process.env.BREVO_SENDER_EMAIL, "Test Email", "<h1>If you see this, email is working!</h1>");
         res.json({ message: "Test email sent! Check server logs for details." });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
+});
+
+// --- API: DEBUG ENV (SHOW WHAT'S LOADED) ---
+app.get('/api/debug-env', (req, res) => {
+    res.json({
+        BREVO_API_KEY: process.env.BREVO_API_KEY ? "Set (***hidden***)" : "NOT SET",
+        BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || "NOT SET",
+        NODE_ENV: process.env.NODE_ENV,
+        PORT: process.env.PORT
+    });
 });
 
 // --- CRON JOB: TOURNAMENT REMINDER (Every Minute) ---
