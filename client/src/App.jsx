@@ -6,7 +6,7 @@ import LoadingSpinner from "./components/LoadingSpinner";
 
 // Lazy Load Pages for Performance
 const Login = lazy(() => import("./pages/Login"));
-const Signup = lazy(() => import("./pages/signup"));
+const Signup = lazy(() => import("./pages/Signup"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const RoleBasedDashboard = lazy(() => import("./components/RoleBasedDashboard"));
 const Profile = lazy(() => import("./pages/Profile"));
