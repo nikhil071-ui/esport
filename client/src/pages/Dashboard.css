@@ -1,0 +1,79 @@
+/* --- Admin Specific Styles --- */
+
+/* Navigation Buttons in Sidebar */
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+  color: #888;
+  text-align: left;
+  padding: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+
+.nav-btn:hover {
+  background: rgba(255, 0, 0, 0.1);
+  color: white;
+}
+
+.nav-btn.active {
+  background: rgba(255, 0, 0, 0.2);
+  color: red;
+  border-left: 3px solid red;
+}
+
+/* Admin Table */
+.admin-table-container {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 0, 0, 0.2);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th, .admin-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-table th {
+  background: rgba(255, 0, 0, 0.1);
+  color: red;
+  font-weight: bold;
+}
+
+.game-tag {
+  background: #333;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.delete-btn {
+  background: transparent;
+  border: 1px solid #ff4444;
+  color: #ff4444;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: #ff4444;
+  color: white;
+}
