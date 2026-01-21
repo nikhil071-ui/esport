@@ -42,7 +42,7 @@ console.log("Resend API Key Loaded:", process.env.RESEND_API_KEY ? "Yes" : "No")
 const sendHtmlEmail = async (to, subject, htmlContent) => {
     try {
         const data = await resend.emails.send({
-            from: "Nexus Esports <onboarding@resend.dev>",
+            from: "Nexus Esports <nikhilchaudhary3868@gmail.com>",
             to: to,
             subject: subject,
             html: htmlContent,
