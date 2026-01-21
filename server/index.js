@@ -36,9 +36,7 @@ if (!admin.apps.length && serviceAccount) {
 console.log("Email Config Loaded User:", process.env.EMAIL_USER ? "Yes" : "No");
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587, // STARTTLS
-    secure: false, // true for 465, false for other ports
+    service: 'gmail', // Back to simplified Service for best Gmail compatibility
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
