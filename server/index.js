@@ -33,10 +33,12 @@ if (!admin.apps.length && serviceAccount) {
 }
 
 // --- 2. NODEMAILER SETUP ---
-console.log("Email Config Loaded User:", process.env.EMAIL_USER);
+console.log("Email Config Loaded User:", process.env.EMAIL_USER ? "Yes" : "No");
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
@@ -630,8 +632,10 @@ app.post('/api/join-tournament', async (req, res) => {
 
 // --- HELPER FUNCTION: SEND EMAIL ---
 async function sendEmail(email, code, res) {
+    console.log(`Attempting to send email to: ${email} with user: ${process.env.EMAIL_USER}`);
+    
     const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: `Nexus Esports <${process.env.EMAIL_USER}>`,
         to: email,
         subject: 'Nexus Esports - Verification Code',
         html: `
@@ -644,10 +648,11 @@ async function sendEmail(email, code, res) {
     };
 
     try {
-        await transporter.sendMail(mailOptions);
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Email sent successfully:", info.messageId);
         res.status(200).json({ success: true, message: 'Email sent' });
     } catch (error) {
-        console.error(error);
+        console.error("Critical Email Error:", error);
         res.status(500).json({ success: false, error: error.message });
     }
 }
