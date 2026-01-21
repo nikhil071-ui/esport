@@ -8,9 +8,10 @@ const TournamentDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [tournament, setTournament] = useState(null);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL}/api/tournament/${id}`)
+    axios.get(`${API_URL}/api/tournament/${id}`)
       .then(res => setTournament(res.data))
       .catch(err => console.error(err));
   }, [id]);

@@ -706,6 +706,125 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
+// --- ROUTE: SEED DATA (DEV ONLY) ---
+app.post('/api/seed-data', async (req, res) => {
+    try {
+        const batch = admin.firestore().batch();
+        
+        // 1. Create Dummy Users
+        const usersRef = admin.firestore().collection('users');
+        const dummyUsers = [
+            { email: 'viper@nexus.com', displayName: 'Viper', role: 'admin', gameId: 'Viper#1234' },
+            { email: 'shadow@nexus.com', displayName: 'Shadow', role: 'user', gameId: 'Shadow#9999' },
+            { email: 'ghost@nexus.com', displayName: 'Ghost', role: 'user', gameId: 'Ghost#0000' },
+            { email: 'player1@gmail.com', displayName: 'ProGamer', role: 'user', gameId: 'Pro#1111' }
+        ];
+
+        dummyUsers.forEach(u => {
+            const newRef = usersRef.doc();
+            batch.set(newRef, u);
+        });
+
+        // 2. Create Dummy Leaderboard Stats
+        const statsRef = admin.firestore().collection('match_stats');
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        const dummyStats = [
+            { tournamentId: 'mock-t1', playerName: 'Viper', kills: 45, damage: 5000, date: today, teamName: 'Team Alpha' },
+            { tournamentId: 'mock-t1', playerName: 'Shadow', kills: 32, damage: 3200, date: today, teamName: 'Team Bravo' },
+            { tournamentId: 'mock-t1', playerName: 'Ghost', kills: 60, damage: 7000, date: today, teamName: 'Team Alpha' },
+            { tournamentId: 'mock-t1', playerName: 'ProGamer', kills: 12, damage: 1500, date: today, teamName: 'SoloSquad' }
+        ];
+
+        dummyStats.forEach(s => {
+            const newRef = statsRef.doc();
+            batch.set(newRef, s);
+        });
+
+        // 3. Create Dummy Tournaments
+        const tRef = admin.firestore().collection('tournaments');
+
+        // T1: Completed BGMI Tournament
+        const t1 = tRef.doc();
+        batch.set(t1, {
+            title: "Winter Championship 2026",
+            game: "BGMI",
+            map: "Erangel",
+            format: "Battle Royale (Squad)",
+            prize: "₹10,000",
+            entryFee: "₹500",
+            date: "2026-01-20",
+            time: "18:00",
+            maxSlots: 100,
+            status: "Completed",
+            winner: "Team Alpha",
+            shortId: "TRN-9999",
+            createdAt: new Date().toISOString(),
+            participants: [
+                { email: "viper@nexus.com", teamName: "Team Alpha", teamSize: "Squad", paymentStatus: "Verified", transactionId: "TXwd123", joinedAt: new Date().toISOString() },
+                { email: "shadow@nexus.com", teamName: "Team Bravo", teamSize: "Squad", paymentStatus: "Verified", transactionId: "TXab456", joinedAt: new Date().toISOString() },
+                { email: "random@user.com", teamName: "Dark Knights", teamSize: "Squad", paymentStatus: "Rejected", transactionId: "TXfail", joinedAt: new Date().toISOString() },
+                { email: "pro@gmail.com", teamName: "SoloSquad", teamSize: "Solo", paymentStatus: "Verified", transactionId: "TXsol1", joinedAt: new Date().toISOString() }
+            ],
+            bracket: [] // Battle Royale doesn't use bracket tree usually, but we can add one for logic check
+        });
+
+        // T2: In-Progress Free Fire Clash Squad (Bracket)
+        const t2 = tRef.doc();
+        batch.set(t2, {
+            title: "Clash Squad Weekly #42",
+            game: "Free Fire",
+            map: "Bermuda",
+            format: "Clash Squad (4v4)",
+            prize: "500 Diamonds",
+            entryFee: "Free",
+            date: "2026-01-25",
+            time: "20:00",
+            maxSlots: 16,
+            status: "In Progress",
+            shortId: "TRN-8888",
+            createdAt: new Date().toISOString(),
+            participants: [
+                { email: "p1@ff.com", teamName: "Red Dragons", paymentStatus: "Verified", transactionId: "Free Entry" },
+                { email: "p2@ff.com", teamName: "Blue Skulls", paymentStatus: "Verified", transactionId: "Free Entry" },
+                { email: "p3@ff.com", teamName: "Green Vipers", paymentStatus: "Verified", transactionId: "Free Entry" },
+                { email: "p4@ff.com", teamName: "Yellow Bolts", paymentStatus: "Verified", transactionId: "Free Entry" }
+            ],
+            bracket: [
+                { id: 1, round: 1, player1: "Red Dragons", player2: "Blue Skulls", winner: "Red Dragons" },
+                { id: 2, round: 1, player1: "Green Vipers", player2: "Yellow Bolts", winner: null },
+                { id: 3, round: 2, player1: "Red Dragons", player2: null, winner: null } // Waiting for winner of match 2
+            ]
+        });
+
+        // T3: Upcoming COD Mobile
+        const t3 = tRef.doc();
+        batch.set(t3, {
+            title: "CODM Sunday Showdown",
+            game: "COD Mobile",
+            map: "Nuketown",
+            format: "Team Deathmatch",
+            prize: "₹2000",
+            entryFee: "Free",
+            date: "2026-02-01",
+            time: "14:00",
+            maxSlots: 32,
+            status: "Open",
+            shortId: "TRN-7777",
+            createdAt: new Date().toISOString(),
+            participants: [
+                { email: "sniper@cod.com", teamName: "Sniper Elite", paymentStatus: "Pending Verification", transactionId: "PendingTx", joinedAt: new Date().toISOString() }
+            ],
+            bracket: []
+        });
+
+        await batch.commit();
+        res.json({ success: true, message: "Full Mock Data Seeded!" });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // --- ROUTE: DECLARE TOURNAMENT WINNER (For Battle Royale) ---
 app.post('/api/set-tournament-winner', async (req, res) => {
     const { tournamentId, winnerName } = req.body;
@@ -756,10 +875,12 @@ app.post('/api/update-stats', async (req, res) => {
 // --- ROUTE: GET LEADERBOARD ---
 app.get('/api/leaderboard', async (req, res) => {
     const { type, month } = req.query; // type = 'player' | 'team'
+    console.log(`[API] Leaderboard Request: type=${type}, month=${month}`);
     
     try {
         let query = admin.firestore().collection('match_stats');
         const snapshot = await query.get();
+        console.log(`[API] Found ${snapshot.size} stats documents.`);
         
         let stats = {};
 
@@ -768,6 +889,8 @@ app.get('/api/leaderboard', async (req, res) => {
             const date = new Date(data.date);
             const dataMonth = date.toISOString().slice(0, 7); // YYYY-MM
             
+            console.log(` - Doc ${doc.id}: Date=${data.date} (Parsed Month: ${dataMonth}) vs Filter=${month}`);
+
             // Filter Month
             if (month && dataMonth !== month) return;
 
@@ -784,9 +907,11 @@ app.get('/api/leaderboard', async (req, res) => {
 
         // Convert to array and sort
         const leaderboard = Object.values(stats).sort((a,b) => b.kills - a.kills);
+        console.log(`[API] Returning ${leaderboard.length} entries.`);
         res.json(leaderboard);
 
     } catch (err) {
+        console.error("[API] Error:", err);
         res.status(500).json({ error: err.message });
     }
 });

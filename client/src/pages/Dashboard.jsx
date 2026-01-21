@@ -26,6 +26,7 @@ const GAME_ASSETS = {
 const Dashboard = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   
   // Data State
   const [tournaments, setTournaments] = useState([]);
@@ -50,9 +51,12 @@ const Dashboard = () => {
 
   const fetchTournaments = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tournaments`);
-      setTournaments(res.data);
-    } catch (error) { console.error(error); }
+      const res = await axios.get(`${API_URL}/api/tournaments`);
+      setTournaments(Array.isArray(res.data) ? res.data : []);
+    } catch (error) { 
+      console.error("Failed to fetch tournaments:", error); 
+      setTournaments([]);
+    }
   };
 
   const handleLogout = async () => {
@@ -87,7 +91,7 @@ const Dashboard = () => {
     }
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/join-tournament`, {
+      await axios.post(`${API_URL}/api/join-tournament`, {
         tournamentId: selectedTournamentId,
         userEmail: currentUser.email,
         teamName: teamName,

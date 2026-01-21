@@ -6,6 +6,7 @@ const ContactUs = () => {
     const navigate = useNavigate();
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -19,7 +20,7 @@ const ContactUs = () => {
         };
 
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL}/api/contact`, formData);
+            await axios.post(`${API_URL}/api/contact`, formData);
             setSubmitted(true);
         } catch (error) {
             alert("Failed to send message: " + (error.response?.data?.error || error.message));

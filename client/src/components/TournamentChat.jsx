@@ -9,6 +9,7 @@ const TournamentChat = ({ tournamentId, title }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const dummyDiv = useRef(null);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
     if (!tournamentId) return;
@@ -50,7 +51,7 @@ const TournamentChat = ({ tournamentId, title }) => {
 
         // Trigger Email Notification (Only if Admin to avoid spam)
         if (userRole === 'admin') {
-            axios.post(`${import.meta.env.VITE_API_URL}/api/notify-chat`, {
+            axios.post(`${API_URL}/api/notify-chat`, {
                 tournamentId,
                 senderName,
                 senderEmail: currentUser.email,

@@ -21,6 +21,7 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState(null); // New State for Role
   const [loading, setLoading] = useState(true);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   // 1. Signup (Updated to create User Document in Firestore)
   async function signup(email, password) {
@@ -36,7 +37,7 @@ export function AuthProvider({ children }) {
 
     // Send Welcome Email
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/send-welcome`, {
+      await axios.post(`${API_URL}/api/send-welcome`, {
         email: user.email,
         name: user.email.split('@')[0]
       });

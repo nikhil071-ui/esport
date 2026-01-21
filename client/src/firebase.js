@@ -1,9 +1,10 @@
-// client/src/firebase.js
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// Using import.meta.env to access .env variables in Vite
+// Log to confirm variables are loaded
+console.log("Firebase API Key Loaded:", import.meta.env.VITE_FIREBASE_API_KEY ? "Yes" : "No");
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,

@@ -13,6 +13,7 @@ const ForgotPassword = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   // STEP 1: Check User & Send Code
   const handleSendCode = async (e) => {
@@ -25,7 +26,7 @@ const ForgotPassword = () => {
       setGeneratedCode(randomCode);
 
       // Call our NEW backend route
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/send-reset-code`, {
+      await axios.post(`${API_URL}/api/send-reset-code`, {
         email: email,
         code: randomCode
       });
@@ -57,7 +58,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/reset-password`, {
+      await axios.post(`${API_URL}/api/reset-password`, {
         email: email,
         newPassword: newPassword
       });

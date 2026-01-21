@@ -23,6 +23,7 @@ const Signup = () => {
   const [generatedCode, setGeneratedCode] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   // Handle Input Changes
   const handleChange = (e) => {
@@ -46,7 +47,7 @@ const Signup = () => {
       setGeneratedCode(code);
 
       // 2. Send Email
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/send-code`, {
+      await axios.post(`${API_URL}/api/send-code`, {
         email: email,
         code: code
       });

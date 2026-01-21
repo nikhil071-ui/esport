@@ -9,6 +9,9 @@ function Leaderboard() {
     const [type, setType] = useState('player'); // 'player' | 'team'
     const [month, setMonth] = useState(new Date().toISOString().slice(0, 7)); // Current Month YYYY-MM
     const [loading, setLoading] = useState(false);
+    
+    // Robust API URL with fallback
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
     useEffect(() => {
         fetchLeaderboard();
@@ -17,8 +20,9 @@ function Leaderboard() {
     const fetchLeaderboard = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/leaderboard?type=${type}&month=${month}`);
-            setStats(res.data || []);
+            console.log("Fetching leaderboard from:", `${API_URL}/api/leaderboard`);
+            const res = await axios.get(`${API_URL}/api/leaderboard?type=${type}&month=${month}`);
+            setStats(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
             console.error(err);
             setStats([]);
@@ -26,7 +30,7 @@ function Leaderboard() {
         setLoading(false);
     };
 
-    const top5 = stats.slice(0, 5);
+    const top5 = Array.isArray(stats) ? stats.slice(0, 5) : [];
     
     // Generate Month Options (Last 12 Months + Next 12 Months)
     const monthOptions = [];
@@ -132,7 +136,7 @@ function Leaderboard() {
                              </tr>
                          </thead>
                          <tbody>
-                             {stats.map((s, idx) => (
+                             {Array.isArray(stats) && stats.map((s, idx) => (
                                  <tr key={idx} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                                      <td className="p-4 font-mono text-slate-400">#{idx + 1}</td>
                                      <td className="p-4 font-bold text-white flex items-center gap-2">

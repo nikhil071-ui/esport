@@ -7,6 +7,7 @@ function StatsManager() {
     const [selectedTournament, setSelectedTournament] = useState(null);
     const [inputStats, setInputStats] = useState({});
     const [loading, setLoading] = useState(false);
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     
     // Auto-save feedback state
     const [lastSaved, setLastSaved] = useState(null);
@@ -17,8 +18,8 @@ function StatsManager() {
 
     const fetchTournaments = async () => {
         try {
-            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tournaments`);
-            setTournaments(res.data);
+            const res = await axios.get(`${API_URL}/api/tournaments`);
+            setTournaments(Array.isArray(res.data) ? res.data : []);
         } catch (error) { console.error("Failed to load tournaments"); }
     };
 
@@ -47,7 +48,7 @@ function StatsManager() {
 
         setLoading(true);
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL}/api/update-stats`, {
+            await axios.post(`${API_URL}/api/update-stats`, {
                 tournamentId: selectedTournament.id,
                 stats: statsArray
             });
@@ -130,7 +131,7 @@ function StatsManager() {
                             </div>
                         )}
 
-                        {selectedTournament.participants?.map((team, idx) => (
+                        {Array.isArray(selectedTournament.participants) && selectedTournament.participants.map((team, idx) => (
                             <div key={idx} className="bg-[#15151e] p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
                                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/5">
                                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg">

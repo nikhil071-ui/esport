@@ -42,6 +42,9 @@ const AdminPanel = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   
+  // Robust API URL with fallback
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   const [activeTab, setActiveTab] = useState('tournaments');
   const [tournaments, setTournaments] = useState([]);
   const [users, setUsers] = useState([]);
@@ -65,16 +68,23 @@ const AdminPanel = () => {
 
   const fetchTournaments = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tournaments`);
-      setTournaments(res.data);
+      const res = await axios.get(`${API_URL}/api/tournaments`);
+      setTournaments(Array.isArray(res.data) ? res.data : []);
     } catch (error) { console.error(error); }
   };
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/users`);
-      setUsers(res.data);
-    } catch (error) { console.error(error); }
+      console.log("Fetching users from:", `${API_URL}/api/users`);
+      const res = await axios.get(`${API_URL}/api/users`);
+      if (Array.isArray(res.data)) {
+         setUsers(res.data);
+      } else {
+         console.warn("API returned non-array for users:", res.data);
+      }
+    } catch (error) { 
+      console.error("Fetch Users Failed:", error); 
+    }
   };
 
   const handleLogout = async () => {
@@ -99,7 +109,7 @@ const AdminPanel = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/create-tournament`, formData);
+      await axios.post(`${API_URL}/api/create-tournament`, formData);
       setShowForm(false);
       setFormData({ 
         title: '', game: 'BGMI', map: 'Erangel', format: 'Battle Royale (Squad)', 
@@ -114,7 +124,7 @@ const AdminPanel = () => {
   const deleteTournament = async (id) => {
     if(!window.confirm("Delete this tournament permanently?")) return;
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/api/tournament/${id}`);
+      await axios.delete(`${API_URL}/api/tournament/${id}`);
       fetchTournaments();
     } catch (error) { console.error(error); }
   };
@@ -124,7 +134,7 @@ const AdminPanel = () => {
     if(!window.confirm(`${action} payment for ${participant.email}?`)) return;
 
     try {
-        await axios.post(`${import.meta.env.VITE_API_URL}/api/verify-player`, { 
+        await axios.post(`${API_URL}/api/verify-player`, { 
             tournamentId: selectedTournament.id,
             userEmail: participant.email,
             transactionId: participant.transactionId,
@@ -403,7 +413,7 @@ const AdminPanel = () => {
                     <button onClick={() => setSelectedTournament(null)} className="text-slate-400 hover:text-white text-2xl font-bold">×</button>
                   </div>
                   <div className="p-6 max-h-[60vh] overflow-y-auto">
-                    {selectedTournament.participants && selectedTournament.participants.length > 0 ? (
+                    {Array.isArray(selectedTournament.participants) && selectedTournament.participants.length > 0 ? (
                       <div className="grid grid-cols-1 gap-3">
                         {selectedTournament.participants.map((p, idx) => (
                           <div key={idx} className="p-4 bg-black/40 rounded-xl border border-white/5 flex flex-col md:flex-row justify-between items-center group hover:border-violet-500/30 transition-all">
@@ -494,6 +504,12 @@ const AdminPanel = () => {
              </header>
 
              <div className="bg-[#15151e] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+                <button 
+                  onClick={fetchUsers} 
+                  className="m-4 px-4 py-2 bg-violet-600 rounded text-sm text-white hover:bg-violet-500 transition-all font-bold"
+                >
+                  🔄 Refresh User List
+                </button>
                 <table className="w-full text-left border-collapse">
                   <thead className="bg-black/40 text-slate-400 text-xs uppercase font-bold tracking-wider">
                     <tr><th className="p-6">User Identity</th><th className="p-6">Clearance Level</th><th className="p-6">System ID</th></tr>

@@ -8,12 +8,13 @@ const Profile = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ displayName: '', gameId: '', bio: '' });
   const [loading, setLoading] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
     // Fetch existing profile data
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/${currentUser.email}`);
+        const res = await axios.get(`${API_URL}/api/user/${currentUser.email}`);
         setFormData({
             displayName: res.data.displayName || '',
             gameId: res.data.gameId || '',
@@ -29,7 +30,7 @@ const Profile = () => {
     setLoading(true);
     try {
       // We pass empty string for avatarUrl to effectivley "remove" it or keep it unused
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/user/update`, { ...formData, email: currentUser.email, avatarUrl: '' });
+      await axios.post(`${API_URL}/api/user/update`, { ...formData, email: currentUser.email, avatarUrl: '' });
       alert("Profile Updated Successfully!");
     } catch (err) { alert("Failed to update."); }
     setLoading(false);

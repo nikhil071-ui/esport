@@ -6,6 +6,7 @@ const Transactions = () => {
   const [filter, setFilter] = useState('All'); 
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
     fetchTransactions();
@@ -14,8 +15,8 @@ const Transactions = () => {
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/transactions`);
-      setTransactions(res.data);
+      const res = await axios.get(`${API_URL}/api/transactions`);
+      setTransactions(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
       console.error("Error fetching transactions", error);
     }
@@ -26,7 +27,7 @@ const Transactions = () => {
     if(!window.confirm(`${action} payment for ${t.teamName}?`)) return;
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/verify-player`, {
+      await axios.post(`${API_URL}/api/verify-player`, {
         tournamentId: t.tournamentId,
         userEmail: t.email,
         transactionId: t.transactionId,

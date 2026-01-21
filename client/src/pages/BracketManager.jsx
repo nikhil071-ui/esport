@@ -9,13 +9,14 @@ function BracketManager() {
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [bracket, setBracket] = useState([]);
   const [loading, setLoading] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
     fetchTournaments();
   }, []);
 
   useEffect(() => {
-    if(bracket && bracket.length > 0) {
+    if(Array.isArray(bracket) && bracket.length > 0) {
         const maxRound = Math.max(...bracket.map(m => m.round));
         const finalMatch = bracket.find(m => m.round === maxRound);
         
@@ -31,8 +32,8 @@ function BracketManager() {
 
   const fetchTournaments = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tournaments`);
-      setTournaments(res.data);
+      const res = await axios.get(`${API_URL}/api/tournaments`);
+      setTournaments(Array.isArray(res.data) ? res.data : []);
     } catch (err) { alert("Error fetching tournaments"); }
   };
 
@@ -45,11 +46,11 @@ function BracketManager() {
     if (!selectedTournament) return;
     setLoading(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/generate-bracket`, {
+      await axios.post(`${API_URL}/api/generate-bracket`, {
         tournamentId: selectedTournament.id,
       });
       alert("Bracket Generated!");
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tournaments`);
+      const res = await axios.get(`${API_URL}/api/tournaments`);
       const updated = res.data.find(x => x.id === selectedTournament.id);
       handleSelectTournament(updated);
     } catch (err) {
@@ -61,7 +62,7 @@ function BracketManager() {
   const setWinner = async (matchId, winnerName) => {
     if (!window.confirm(`Declare ${winnerName} as winner?`)) return;
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/update-match`, {
+      await axios.post(`${API_URL}/api/update-match`, {
         tournamentId: selectedTournament.id,
         matchId: matchId,
         winner: winnerName
@@ -71,7 +72,7 @@ function BracketManager() {
   };
 
   const refreshTournament = async () => {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tournaments`);
+      const res = await axios.get(`${API_URL}/api/tournaments`);
       const updated = res.data.find(x => x.id === selectedTournament.id);
       handleSelectTournament(updated);
   };
@@ -79,7 +80,7 @@ function BracketManager() {
   const setBattleRoyaleWinner = async (winnerName) => {
       if(!window.confirm(`Declare ${winnerName} as the GRAND WINNER of the Lobby?`)) return;
       try {
-          await axios.post(`${import.meta.env.VITE_API_URL}/api/set-tournament-winner`, {
+          await axios.post(`${API_URL}/api/set-tournament-winner`, {
               tournamentId: selectedTournament.id,
               winnerName: winnerName
           });
@@ -97,7 +98,7 @@ function BracketManager() {
   );
 
   // Group matches by round for Tree Visualization
-  const rounds = bracket ? bracket.reduce((acc, match) => {
+  const rounds = Array.isArray(bracket) ? bracket.reduce((acc, match) => {
     acc[match.round] = acc[match.round] || [];
     acc[match.round].push(match);
     return acc;
@@ -184,7 +185,7 @@ function BracketManager() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {selectedTournament.participants && selectedTournament.participants.map((p, idx) => {
+                                {Array.isArray(selectedTournament.participants) && selectedTournament.participants.map((p, idx) => {
                                     const pName = typeof p === 'object' ? p.teamName : p;
                                     const isWinner = selectedTournament.winner === pName;
                                     return (
