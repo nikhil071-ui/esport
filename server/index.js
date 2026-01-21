@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 const admin = require("firebase-admin");
 const cron = require('node-cron');
 const templates = require('./emailTemplates');
@@ -11,9 +11,6 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-// Initialize Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 // --- 1. FIREBASE ADMIN SETUP ---
 let serviceAccount;
@@ -35,20 +32,31 @@ if (!admin.apps.length && serviceAccount) {
     });
 }
 
-// --- 2. EMAIL SETUP (Using Resend instead of Gmail SMTP) ---
-console.log("Resend API Key Loaded:", process.env.RESEND_API_KEY ? "Yes" : "No");
+// --- 2. EMAIL SETUP (Using Brevo SMTP - Reliable on Render) ---
+console.log("Brevo SMTP Configured:", process.env.BREVO_SMTP_USER ? "Yes" : "No");
 
-// Helper Function for HTML Emails using Resend
+const transporter = nodemailer.createTransport({
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    secure: false,
+    auth: {
+        user: process.env.BREVO_SMTP_USER,
+        pass: process.env.BREVO_SMTP_PASS
+    }
+});
+
+// Helper Function for HTML Emails using Brevo
 const sendHtmlEmail = async (to, subject, htmlContent) => {
+    const mailOptions = {
+        from: `Nexus Esports <${process.env.BREVO_SENDER_EMAIL}>`,
+        to: to,
+        subject: subject,
+        html: htmlContent
+    };
     try {
-        const data = await resend.emails.send({
-            from: "Nexus Esports <nikhilchaudhary3868@gmail.com>",
-            to: to,
-            subject: subject,
-            html: htmlContent,
-        });
-        console.log(`Email Sent to ${to}:`, data);
-        return data;
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`Email Sent to ${to}:`, info.messageId);
+        return info;
     } catch (error) {
         console.error(`Failed to send email to ${to}:`, error);
         throw error;
