@@ -658,24 +658,18 @@ app.post('/api/join-tournament', async (req, res) => {
 
 // --- HELPER FUNCTION: SEND EMAIL ---
 async function sendEmail(email, code, res) {
-    console.log(`Attempting to send email to: ${email} with user: ${process.env.EMAIL_USER}`);
-    
-    const mailOptions = {
-        from: `Nexus Esports <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: 'Nexus Esports - Verification Code',
-        html: `
+    try {
+        await sendHtmlEmail(
+            email,
+            'Nexus Esports - Verification Code',
+            `
             <div style="font-family: Arial; padding: 20px; color: #333;">
                 <h2 style="color: #bd00ff;">Verification Required</h2>
                 <p>Use this code to verify your identity:</p>
                 <h1 style="background: #eee; display: inline-block; padding: 10px; letter-spacing: 5px;">${code}</h1>
             </div>
-        `
-    };
-
-    try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log("Email sent successfully:", info.messageId);
+            `
+        );
         res.status(200).json({ success: true, message: 'Email sent' });
     } catch (error) {
         console.error("Critical Email Error:", error);
