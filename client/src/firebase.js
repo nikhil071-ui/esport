@@ -3,10 +3,15 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 // Log to confirm variables are loaded
-console.log("Firebase API Key Loaded:", import.meta.env.VITE_FIREBASE_API_KEY ? "Yes" : "No");
+const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+console.log("Firebase API Key Loaded:", apiKey ? "Yes" : "No");
+
+if (!apiKey) {
+  console.error("Firebase API key is missing! Please check your .env file and restart the development server.");
+}
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  apiKey: apiKey,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
