@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
 import LoadingSpinner from "./components/LoadingSpinner";
+import { Analytics } from "@vercel/analytics/react";
 
 // Lazy Load Pages for Performance
 const Login = lazy(() => import("./pages/Login"));
@@ -53,9 +54,9 @@ function App() {
 
           </Routes>
         </Suspense>
+        <Analytics />
       </AuthProvider>
     </Router>
   );
 }
-
 export default App;
